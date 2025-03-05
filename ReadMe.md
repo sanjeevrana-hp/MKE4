@@ -47,7 +47,8 @@ docker exec -it mke4-container /bin/bash
 If you prefer to use a prebuilt image, pull it and run:  
 
 ```sh
-docker run -it -d --name mke4-container ubuntu22-mke4
+docker pull sanjeevranahp/mke4:latest
+docker run -it -d --name mke4-container sanjeevranahp/mke4
 docker exec -it mke4-container /bin/bash
 ```
 
