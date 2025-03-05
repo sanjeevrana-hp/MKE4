@@ -4,10 +4,10 @@
 
 # Main script for creating Infrastructure and managing MKE4
 
-if [ $# -ne 2 ]; then
-    echo "Usage: $0 <destroy|reset|apply|deploy> <service>"
-    exit 1
-fi
+#if [ $# -ne 2 ]; then
+#    echo "Usage: $0 <destroy|reset|apply|deploy> <service>"
+#    exit 1
+#fi
 
 action=$1
 service=$2
@@ -103,7 +103,7 @@ case "$action" in
         echo "======================================================="
         echo "Load Balancer URL for MKE Dashboard:"
         echo "-----------------------------------------------------"
-        terraform output -raw lb_dns_name 
+        terraform output -raw lb_dns_name
         echo "\n-----------------------------------------------------"
         ;;
       *)
@@ -114,8 +114,27 @@ case "$action" in
     ;;
 
   *)
-    echo "Invalid action: $action"
-    echo "Valid actions: destroy, deploy, apply, reset"
-    exit 1
+    echo "Invalid option. Please use the -h to know the right options"
     ;;
 esac
+
+
+
+Help()
+{
+   echo "Here's the options:"
+   echo "------------------------"
+   echo "------------------------"
+   echo "t deploy lab   Deploy the infrastructure and install a fresh MKE4 cluster."
+   echo "t delete lab   Delete the infrastructure along with the MKE4 cluster."
+   echo "t apply lab    Apply new changes from mke4.yaml, and create a MKE4 cluster."
+   echo "t reset lab    Reset the MKE4 cluster (delete the cluster but keep the infrastructure)."
+}
+
+while getopts ":h" option; do
+   case $option in
+      h) # display Help
+         Help
+         exit;;
+   esac
+done
