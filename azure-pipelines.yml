@@ -1,0 +1,44 @@
+trigger:
+  branches:
+    include:
+      - main  # Runs when code is pushed to `main`
+
+pool:
+  vmImage: 'ubuntu-latest'  # Runs on an Ubuntu agent
+
+steps:
+  - task: Checkout@1  # Pull the latest code from GitHub
+
+  # Step 1: Build Docker Image
+  - script: |
+      docker build -t my-mke:latest .
+    displayName: "Build Docker Image"
+
+  # Step 2: Run Docker Container
+  - script: |
+      docker run -d --name my-mke-container my-mke:latest
+    displayName: "Run Docker Container"
+
+  # Step 3: Run Script Inside Container
+  - script: |
+      docker exec my-mke-container /bin/sh -c "/path/to/your-script.sh"
+    displayName: "Run Script Inside Container"
+
+  # Step 4: Copy kubeconfig from container
+  - script: |
+      docker cp my-container:/root/.mke/mke.kubeconf $(Build.ArtifactStagingDirectory)/mke.kubeconf
+    displayName: "Copy kubeconfig from Container"
+
+  # Step 5: Terraform Apply and Extract Load Balancer DNS
+  - script: |
+      terraform init
+      terraform apply -auto-approve
+      terraform output -raw lb_dns_name > $(Build.ArtifactStagingDirectory)/lb_dns_name.txt
+    displayName: "Terraform Apply & Extract LB DNS"
+
+  # Step 6: Publish Artifacts (kubeconfig & lb_dns_name)
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish kubeconfig & LB DNS Output"
+    inputs:
+      pathToPublish: "$(Build.ArtifactStagingDirectory)"
+      artifactName: "deployment_outputs"
