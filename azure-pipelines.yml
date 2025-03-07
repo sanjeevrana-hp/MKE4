@@ -9,12 +9,21 @@ pool:
 steps:
   - task: Checkout@1  # Pull the latest code from GitHub
 
-  # Step 1: Build Docker Image
+  # Step 1: Ensure Docker is Running
   - script: |
+      sudo systemctl start docker
+      docker version
+    displayName: "Ensure Docker is Running"
+
+  # Step 2: Build Docker Image
+  - script: |
+      set -x  # Enable debug mode
       docker build -t my-mke:latest .
     displayName: "Build Docker Image"
 
-  # Step 2: Run Docker Container
+  # Step 3: Run Docker Container (Ensure Fresh Start)
   - script: |
+      docker stop my-mke-container || true
+      docker rm my-mke-container || true
       docker run -d --name my-mke-container my-mke:latest
     displayName: "Run Docker Container"
