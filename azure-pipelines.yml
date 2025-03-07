@@ -18,27 +18,3 @@ steps:
   - script: |
       docker run -d --name my-mke-container my-mke:latest
     displayName: "Run Docker Container"
-
-  # Step 3: Terraform Apply and Extract Load Balancer DNS
-  - script: |
-      terraform init
-      terraform apply -auto-approve
-      terraform output -raw lb_dns_name > $(Build.ArtifactStagingDirectory)/lb_dns_name.txt
-    displayName: "Terraform Apply & Extract LB DNS"
-
-  # Step 4: Run Script Inside Container
-  - script: |
-      docker exec my-mke-container /bin/sh -c "/MKE4/apply.sh"
-    displayName: "Run Script Inside Container"
-
-  # Step 5: Copy kubeconfig from container
-  - script: |
-      docker cp my-mke-container:/root/.mke/mke.kubeconf $(Build.ArtifactStagingDirectory)/mke.kubeconf
-    displayName: "Copy kubeconfig from Container"
-
-  # Step 6: Publish Artifacts (kubeconfig & lb_dns_name)
-  - task: PublishBuildArtifacts@1
-    displayName: "Publish kubeconfig & LB DNS Output"
-    inputs:
-      pathToPublish: "$(Build.ArtifactStagingDirectory)"
-      artifactName: "deployment_outputs"
