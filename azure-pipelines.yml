@@ -34,3 +34,39 @@ steps:
       docker images
       docker run -d --name my-mke-container my-mke:latest || docker logs my-mke-container
     displayName: "Run Docker Container & Debug Logs"
+
+  # Step 6: Terraform Apply and Extract Load Balancer DNS
+  - script: |
+      terraform init
+      terraform apply -auto-approve
+      if terraform output -json | jq -e '.lb_dns_name' > /dev/null; then
+        terraform output -json | jq -r '.lb_dns_name.value' > $(Build.ArtifactStagingDirectory)/lb_dns_name.txt
+      else
+        echo "Output key lb_dns_name not found" > $(Build.ArtifactStagingDirectory)/lb_dns_name.txt
+      fi
+    displayName: "Terraform Apply & Extract LB DNS"
+
+  # Step 7: Run Script Inside Container (Only if Running)
+  - script: |
+      if docker ps | grep -q my-mke-container; then
+        docker exec my-mke-container /bin/sh -c "/MKE4/apply.sh || echo 'Script failed'"
+      else
+        echo "Container not running, skipping script execution"
+      fi
+    displayName: "Run Script Inside Container"
+
+  # Step 8: Copy kubeconfig from container (Only if Exists)
+  - script: |
+      if docker exec my-mke-container test -f /root/.mke/mke.kubeconf; then
+        docker cp my-mke-container:/root/.mke/mke.kubeconf $(Build.ArtifactStagingDirectory)/mke.kubeconf
+      else
+        echo "Kubeconfig not found" > $(Build.ArtifactStagingDirectory)/mke.kubeconf
+      fi
+    displayName: "Copy kubeconfig from Container"
+
+  # Step 9: Publish Artifacts (kubeconfig & lb_dns_name)
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish kubeconfig & LB DNS Output"
+    inputs:
+      pathToPublish: "$(Build.ArtifactStagingDirectory)"
+      artifactName: "deployment_outputs"
