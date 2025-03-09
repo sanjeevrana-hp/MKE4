@@ -44,12 +44,14 @@ steps:
 
   # Step 8: Run Terraform Apply inside the Container
   - script: |
+      docker exec my-mke-container /bin/bash -c "t deploy lab"
+    displayName: "Run 't deploy lab' inside the container"
+
+  - script: |
       docker exec my-mke-container /bin/bash -c "
-        cd /MKE4/mke-docs/content/docs/tutorials/k0s-in-aws/terraform && \
-        t deploy lab \
-        terraform output -json | jq -r '.lb_dns_name.value' > /MKE4/lb_dns_name.txt
-      "
-    displayName: "Terraform Apply & Extract LB DNS Inside Container"
+        cd /MKE4/mke-docs/content/docs/tutorials/k0s-in-aws/terraform && 
+        terraform output -json | jq -r '.lb_dns_name.value' > /MKE4/lb_dns_name.txt"
+    displayName: "Extract Terraform output and save lb_dns_name"
 
   # Step 9: Copy Load Balancer DNS Output from Container
   - script: |
