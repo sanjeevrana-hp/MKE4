@@ -27,11 +27,11 @@ steps:
       docker build -t my-mke:latest .
     displayName: "Build Docker Image"
 
-  # Step 5: Run Docker Container (with Debugging)
+  # Step 5: Run Docker Container
   - script: |
       docker images
       docker run -d -it --name my-mke-container my-mke:latest
-    displayName: "Run Docker Container & Debug Logs"
+    displayName: "Run Docker Container"
 
   # Step 6: Run Terraform Apply inside the Container
   - script: |
