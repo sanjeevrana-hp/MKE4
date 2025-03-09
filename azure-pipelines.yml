@@ -29,6 +29,8 @@ steps:
 
   # Step 5: Run Docker Container (with Debugging)
   - script: |
+      docker stop my-mke-container || true
+      docker rm my-mke-container || true
       docker images
       docker run -d --name my-mke-container my-mke:latest
     displayName: "Run Docker Container & Debug Logs"
@@ -36,9 +38,8 @@ steps:
   # Step 6: Run Terraform Apply inside the Container
   - script: |
       docker exec my-mke-container /bin/sh -c "
-        cd /MKE4 && \
-        terraform init && \
-        terraform apply -auto-approve && \
+        cd /MKE4/mke-docs/content/docs/tutorials/k0s-in-aws/terraform && \
+        t deploy lab \
         terraform output -json | jq -r '.lb_dns_name.value' > /MKE4/lb_dns_name.txt
       "
     displayName: "Terraform Apply & Extract LB DNS Inside Container"
@@ -48,12 +49,7 @@ steps:
       docker cp my-mke-container:/MKE4/lb_dns_name.txt $(Build.ArtifactStagingDirectory)/lb_dns_name.txt || echo "LB DNS output not found"
     displayName: "Copy Load Balancer DNS from Container"
 
-  # Step 8: Run MKE4 Apply Script Inside Container
-  - script: |
-      docker exec my-mke-container /bin/sh -c "/MKE4/apply.sh || echo 'Script failed'"
-    displayName: "Run Script Inside Container"
-
-  # Step 9: Copy kubeconfig from Container
+  # Step 8: Copy kubeconfig from Container
   - script: |
       docker cp my-mke-container:/root/.mke/mke.kubeconf $(Build.ArtifactStagingDirectory)/mke.kubeconf || echo "Kubeconfig not found"
     displayName: "Copy kubeconfig from Container"
