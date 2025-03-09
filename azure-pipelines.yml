@@ -27,6 +27,11 @@ steps:
       docker run -d --name my-mke-container sanjeevranahp/mke4:latest
     displayName: "Build Docker Image"
 
+  # Step 3: Log in to Docker Hub (Requires Service Connection)
+  - script: |
+      echo "$(DOCKERHUB_PASSWORD)" | docker login -u "$(DOCKERHUB_USERNAME)" --password-stdin
+    displayName: "Docker Hub Login"
+
   # Step 5: Push Docker Image to Docker Hub
   - script: |
       docker push sanjeevranahp/mke4:latest
