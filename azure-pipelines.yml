@@ -21,7 +21,7 @@ steps:
       env
     displayName: "Debug Environment Variables"
 
-  # Step 4: Build Docker Image
+  # Step 4: Build Docker Image (Ensure Terraform is Installed in Image)
   - script: |
       set -x  # Enable debug mode
       docker build -t my-mke:latest .
@@ -29,42 +29,36 @@ steps:
 
   # Step 5: Run Docker Container (with Debugging)
   - script: |
-      docker stop my-mke-container || true
-      docker rm my-mke-container || true
       docker images
-      docker run -d --name my-mke-container my-mke:latest || docker logs my-mke-container
+      docker run -d --name my-mke-container my-mke:latest
     displayName: "Run Docker Container & Debug Logs"
 
-  # Step 6: Terraform Apply and Extract Load Balancer DNS
+  # Step 6: Run Terraform Apply inside the Container
   - script: |
-      terraform init
-      terraform apply -auto-approve
-      if terraform output -json | jq -e '.lb_dns_name' > /dev/null; then
-        terraform output -json | jq -r '.lb_dns_name.value' > $(Build.ArtifactStagingDirectory)/lb_dns_name.txt
-      else
-        echo "Output key lb_dns_name not found" > $(Build.ArtifactStagingDirectory)/lb_dns_name.txt
-      fi
-    displayName: "Terraform Apply & Extract LB DNS"
+      docker exec my-mke-container /bin/sh -c "
+        cd /MKE4 && \
+        terraform init && \
+        terraform apply -auto-approve && \
+        terraform output -json | jq -r '.lb_dns_name.value' > /MKE4/lb_dns_name.txt
+      "
+    displayName: "Terraform Apply & Extract LB DNS Inside Container"
 
-  # Step 7: Run Script Inside Container (Only if Running)
+  # Step 7: Copy Load Balancer DNS Output from Container
   - script: |
-      if docker ps | grep -q my-mke-container; then
-        docker exec my-mke-container /bin/sh -c "/MKE4/apply.sh || echo 'Script failed'"
-      else
-        echo "Container not running, skipping script execution"
-      fi
+      docker cp my-mke-container:/MKE4/lb_dns_name.txt $(Build.ArtifactStagingDirectory)/lb_dns_name.txt || echo "LB DNS output not found"
+    displayName: "Copy Load Balancer DNS from Container"
+
+  # Step 8: Run MKE4 Apply Script Inside Container
+  - script: |
+      docker exec my-mke-container /bin/sh -c "/MKE4/apply.sh || echo 'Script failed'"
     displayName: "Run Script Inside Container"
 
-  # Step 8: Copy kubeconfig from container (Only if Exists)
+  # Step 9: Copy kubeconfig from Container
   - script: |
-      if docker exec my-mke-container test -f /root/.mke/mke.kubeconf; then
-        docker cp my-mke-container:/root/.mke/mke.kubeconf $(Build.ArtifactStagingDirectory)/mke.kubeconf
-      else
-        echo "Kubeconfig not found" > $(Build.ArtifactStagingDirectory)/mke.kubeconf
-      fi
+      docker cp my-mke-container:/root/.mke/mke.kubeconf $(Build.ArtifactStagingDirectory)/mke.kubeconf || echo "Kubeconfig not found"
     displayName: "Copy kubeconfig from Container"
 
-  # Step 9: Publish Artifacts (kubeconfig & lb_dns_name)
+  # Step 10: Publish Artifacts (kubeconfig & lb_dns_name)
   - task: PublishBuildArtifacts@1
     displayName: "Publish kubeconfig & LB DNS Output"
     inputs:
