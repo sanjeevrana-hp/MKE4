@@ -7,23 +7,30 @@ pool:
   vmImage: 'ubuntu-latest'  # Runs on an Ubuntu agent
 
 steps:
-  - task: Checkout@1  # Pull the latest code from GitHub
+  # Step 1: Ensure Repository is Checked Out
+  - checkout: self
 
-  # Step 1: Ensure Docker is Running
+  # Step 2: Verify Docker is Installed and Running
   - script: |
-      sudo systemctl start docker
-      docker version
-    displayName: "Ensure Docker is Running"
+      docker --version
+      docker info
+    displayName: "Verify Docker Installation"
 
-  # Step 2: Build Docker Image
+  # Step 3: Debug Environment Variables (if using Azure DevOps variables)
+  - script: |
+      env
+    displayName: "Debug Environment Variables"
+
+  # Step 4: Build Docker Image
   - script: |
       set -x  # Enable debug mode
       docker build -t my-mke:latest .
     displayName: "Build Docker Image"
 
-  # Step 3: Run Docker Container (Ensure Fresh Start)
+  # Step 5: Run Docker Container (with Debugging)
   - script: |
       docker stop my-mke-container || true
       docker rm my-mke-container || true
-      docker run -d --name my-mke-container my-mke:latest
-    displayName: "Run Docker Container"
+      docker images
+      docker run -d --name my-mke-container my-mke:latest || docker logs my-mke-container
+    displayName: "Run Docker Container & Debug Logs"
