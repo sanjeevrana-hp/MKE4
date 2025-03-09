@@ -29,15 +29,13 @@ steps:
 
   # Step 5: Run Docker Container (with Debugging)
   - script: |
-      docker stop my-mke-container || true
-      docker rm my-mke-container || true
       docker images
-      docker run -d --name my-mke-container my-mke:latest
+      docker run -d -it --name my-mke-container my-mke:latest
     displayName: "Run Docker Container & Debug Logs"
 
   # Step 6: Run Terraform Apply inside the Container
   - script: |
-      docker exec my-mke-container /bin/sh -c "
+      docker exec -it my-mke-container /bin/sh -c "
         cd /MKE4/mke-docs/content/docs/tutorials/k0s-in-aws/terraform && \
         t deploy lab \
         terraform output -json | jq -r '.lb_dns_name.value' > /MKE4/lb_dns_name.txt
