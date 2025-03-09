@@ -69,11 +69,11 @@ RUN cd $TERRAFORM_DIR && \
 # Set the working directory
 WORKDIR /MKE4
 
-# Copy the apply.sh
-COPY apply.sh /MKE4 
+# Copy apply.sh to /usr/local/bin/t
+COPY apply.sh /usr/local/bin/t
 
-#Set the permission
-RUN chmod 700 apply.sh
+# Set execute permission for the script
+RUN chmod +x /usr/local/bin/t
 
 # Set up aliases
 RUN echo "alias k='kubectl'" >> ~/.bashrc && \
