@@ -23,27 +23,26 @@ steps:
 
   # Step 4: Build Docker Image
   - script: |
-      set -x  # Enable debug mode
-      docker run -d --name my-mke-container sanjeevranahp/mke4:latest
+      docker build -t sanjeevranahp/mke4:latest .
     displayName: "Build Docker Image"
 
-  # Step 3: Log in to Docker Hub (Requires Service Connection)
+  # Step 5: Log in to Docker Hub (Requires Service Connection)
   - script: |
       echo "$(DOCKERHUB_PASSWORD)" | docker login -u "$(DOCKERHUB_USERNAME)" --password-stdin
     displayName: "Docker Hub Login"
 
-  # Step 5: Push Docker Image to Docker Hub
+  # Step 6: Push Docker Image to Docker Hub
   - script: |
       docker push sanjeevranahp/mke4:latest
     displayName: "Push Image to Docker Hub"
 
-  # Step 6: Run Docker Container
+  # Step 7: Run Docker Container
   - script: |
       docker images
       docker run -d -it --name my-mke-container sanjeevranahp/mke4:latest
     displayName: "Run Docker Container"
 
-  # Step 7: Run Terraform Apply inside the Container
+  # Step 8: Run Terraform Apply inside the Container
   - script: |
       docker exec my-mke-container /bin/bash -c "
         cd /MKE4/mke-docs/content/docs/tutorials/k0s-in-aws/terraform && \
@@ -52,17 +51,17 @@ steps:
       "
     displayName: "Terraform Apply & Extract LB DNS Inside Container"
 
-  # Step 8: Copy Load Balancer DNS Output from Container
+  # Step 9: Copy Load Balancer DNS Output from Container
   - script: |
       docker cp my-mke-container:/MKE4/lb_dns_name.txt $(Build.ArtifactStagingDirectory)/lb_dns_name.txt || echo "LB DNS output not found"
     displayName: "Copy Load Balancer DNS from Container"
 
-  # Step 9: Copy kubeconfig from Container
+  # Step 10: Copy kubeconfig from Container
   - script: |
       docker cp my-mke-container:/root/.mke/mke.kubeconf $(Build.ArtifactStagingDirectory)/mke.kubeconf || echo "Kubeconfig not found"
     displayName: "Copy kubeconfig from Container"
 
-  # Step 10: Publish Artifacts (kubeconfig & lb_dns_name)
+  # Step 11: Publish Artifacts (kubeconfig & lb_dns_name)
   - task: PublishBuildArtifacts@1
     displayName: "Publish kubeconfig & LB DNS Output"
     inputs:
