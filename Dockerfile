@@ -42,6 +42,9 @@ RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/sh
     echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list && \
     apt-get update && apt-get install -y terraform
 
+# Install Flux CLI (Latest Version)
+RUN curl -s https://fluxcd.io/install.sh | bash
+
 # Create the MKE4 directory and clone the GitHub repository
 RUN mkdir /MKE4 && git clone https://github.com/Mirantis/mke-docs.git /MKE4/mke-docs
 
