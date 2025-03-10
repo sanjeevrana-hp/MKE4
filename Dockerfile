@@ -77,7 +77,6 @@ RUN chmod +x /usr/local/bin/t
 
 # Set up aliases
 RUN echo "alias k='kubectl'" >> ~/.bashrc && \
-    echo "alias t='sh /MKE4/apply.sh'" >> ~/.bashrc && \
     echo 'export KUBECONFIG=/root/.mke/mke.kubeconf' >> /root/.bashrc
 
 # Keep the container running
