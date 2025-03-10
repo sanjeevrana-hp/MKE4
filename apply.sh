@@ -104,7 +104,7 @@ case "$action" in
         echo "Load Balancer URL for MKE Dashboard:"
         echo "-----------------------------------------------------"
         terraform output -raw lb_dns_name
-        echo "\n-----------------------------------------------------"
+        echo -e "\n-----------------------------------------------------"
         ;;
       *)
         echo "Invalid Option"
