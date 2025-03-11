@@ -1,23 +1,10 @@
+
+
 # MKE4 Cluster Installation  
 
-## Step 1: Prerequisites  
-Ensure your machine or laptop has the necessary AWS credentials before executing the installation:  
-
-```sh
-export AWS_ACCESS_KEY_ID=<your-access-key>
-export AWS_SECRET_ACCESS_KEY=<your-secret-key>
-export AWS_SESSION_TOKEN=<your-session-token>
-```
-
-### Edit the Configuration File  
-Modify the default config file located in `/MKE4` to specify your desired cluster settings:  
-
-```ini
-cluster_name = "k0s-cluster-ofh"
-controller_count = 1
-worker_count = 1
-cluster_flavor = "t2.large"
-region = "ap-northeast-1"
+## Step 1: Pull the code 
+```sh 
+git clone https://github.com/sanjeevrana-hp/MKE4.git
 ```
 
 ---
@@ -25,9 +12,10 @@ region = "ap-northeast-1"
 ## Step 2: Build and Run the Container  
 
 ### Option 1: Build the Container from Source  
-Clone the repository and build the container:  
+Change the directory & build the container:  
 
 ```sh
+cd /MKE4
 docker build --no-cache -t ubuntu22-mke4 .
 ```
 
@@ -55,13 +43,33 @@ docker exec -it mke4-container /bin/bash
 ---
 
 ## Step 3: Deploy the Lab and Install the MKE4 Cluster  
+
+### Prerequisites
+Export the AWS credentials in container before executing the deployment:  
+
+```sh
+export AWS_ACCESS_KEY_ID=<your-access-key>
+export AWS_SECRET_ACCESS_KEY=<your-secret-key>
+export AWS_SESSION_TOKEN=<your-session-token>
+```
+
+### Edit the Configuration File  
+Modify the default config file located in `/MKE4` to specify your desired cluster settings:  
+
+```ini
+cluster_name = "k0s-cluster-ofh"
+controller_count = 1
+worker_count = 1
+cluster_flavor = "t2.large"
+region = "ap-northeast-1"
+```
+---
+
 Run the following command to deploy the infrastructure and install the MKE4 cluster:  
 
 ```sh
 t deploy lab
 ```
-
----
 
 ## Step 4: Destroy the Lab and MKE4 Cluster  
 To tear down the infrastructure and remove the cluster:  
@@ -89,5 +97,5 @@ t destroy lab
 ---
 
 ## Notes  
-- Ensure you have **Docker installed** before running the commands.  
+- Ensure you have **Docker installed** on your host machine before running the container and execute the commands.  
 - Modify the `mke4.yaml` file as needed before applying changes.  
