@@ -2,16 +2,19 @@
 
 # MKE4 Cluster Installation  
 
-## Step 1: Pull the code 
+## Prerequisites
+- Ensure you have **Docker installed** on your host machine before running the container and execute the commands.  
+
+
+## Step 1: Spin the docker container  
+
+### Option 1: Pull the code, then build the Container from Source  
+
 ```sh 
 git clone https://github.com/sanjeevrana-hp/MKE4.git
 ```
-
 ---
 
-## Step 2: Build and Run the Container  
-
-### Option 1: Build the Container from Source  
 Change the directory & build the container:  
 
 ```sh
@@ -42,7 +45,7 @@ docker exec -it mke4-container /bin/bash
 
 ---
 
-## Step 3: Deploy the Lab and Install the MKE4 Cluster  
+## Step 2: Deploy the Lab and Install the MKE4 Cluster  
 
 ### Prerequisites
 Export the AWS credentials in container before executing the deployment:  
@@ -71,7 +74,7 @@ Run the following command to deploy the infrastructure and install the MKE4 clus
 t deploy lab
 ```
 
-## Step 4: Destroy the Lab and MKE4 Cluster  
+## Step 3: Destroy the Lab and MKE4 Cluster  
 To tear down the infrastructure and remove the cluster:  
 
 ```sh
@@ -97,5 +100,5 @@ t destroy lab
 ---
 
 ## Notes  
-- Ensure you have **Docker installed** on your host machine before running the container and execute the commands.  
-- Modify the `mke4.yaml` file as needed before applying changes.  
+
+- For more reference please check https://mirantis.github.io/mke-docs/
